@@ -252,8 +252,8 @@ main {
     }
 
     .game-stats {
-        flex-direction: row; /* 横並びに変更 */
-        justify-content: space-around; /* 均等に配置 */
+        flex-direction: row;
+        justify-content: space-around;
         gap: 8px;
         font-size: 0.9em;
     }
@@ -262,12 +262,18 @@ main {
         gap: 10px;
     }
 
+    .search-container {
+        display: flex; /* Flexboxを適用 */
+        justify-content: center; /* 中央寄せ */
+        width: 100%; /* 親要素の幅いっぱいに広げる */
+    }
+
     #searchInput {
         width: 100%;
         max-width: 250px;
         font-size: 0.9em;
         padding: 8px 15px 8px 30px;
-        margin: 0 auto; /* 中央に配置 */
+        margin: 0; /* 親要素のflexboxで中央寄せするため、marginをリセット */
     }
 
     #skipButton {
