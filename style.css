@@ -222,3 +222,59 @@ main {
     background-color: #0056b3;
     transform: translateY(-2px);
 }
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    main {
+        padding: 15px;
+    }
+
+    #gameState {
+        margin: 0 10px;
+        padding: 15px;
+    }
+
+    .location-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .arrow {
+        display: none; /* スマホでは矢印を非表示 */
+    }
+
+    .location-box {
+        padding: 10px 15px;
+    }
+
+    .word-display {
+        font-size: 1.4em;
+    }
+
+    .game-stats {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #searchInput {
+        width: 100%;
+        max-width: 280px; /* 最大幅を維持 */
+    }
+
+    #linksContainer {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* スマホでより多くのリンクを横に並べる */
+        gap: 15px;
+        padding: 5px;
+    }
+
+    .link-item {
+        padding: 15px;
+        font-size: 1em;
+    }
+}
