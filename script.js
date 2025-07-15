@@ -27,6 +27,18 @@ let linksContainer;
 let gameStateDiv;
 
 // ----------------
+// ヘルパー関数
+// ----------------
+/**
+ * 単語が数字で始まるかどうかを判定する
+ * @param {string} word - 判定する単語
+ * @returns {boolean}
+ */
+function startsWithNumber(word) {
+    return /^[0-9]/.test(word);
+}
+
+// ----------------
 // ゲームロジック
 // ----------------
 
@@ -52,14 +64,28 @@ async function startNewRound() {
     clickCount = 0;
     hintUsedThisRound = false;
 
-    // ランダムな単語を2つ取得
-    const randomWords = await fetchRandomWords(2);
-    if (!randomWords || randomWords.length < 2) {
-        gameStateDiv.innerHTML = '<p>お題の取得に失敗しました。リロードしてください。</p>';
+    let validWordsFound = false;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 10; // 有効な単語が見つからない場合の最大試行回数
+
+    while (!validWordsFound && attempts < MAX_ATTEMPTS) {
+        attempts++;
+        const randomWords = await fetchRandomWords(2); // 2つの単語を取得
+        if (randomWords && randomWords.length === 2 &&
+            !startsWithNumber(randomWords[0]) && !startsWithNumber(randomWords[1])) {
+            START_WORD = randomWords[0];
+            GOAL_WORD = randomWords[1];
+            validWordsFound = true;
+        } else {
+            console.warn(`Attempt ${attempts}: Invalid words found. Retrying...`);
+        }
+    }
+
+    if (!validWordsFound) {
+        gameStateDiv.innerHTML = '<p>有効なお題の取得に失敗しました。リロードしてください。</p>';
         return;
     }
 
-    [START_WORD, GOAL_WORD] = randomWords;
     currentWord = START_WORD;
 
     updateUI();
@@ -73,10 +99,15 @@ async function startNewRound() {
  */
 async function fetchRandomWords(count) {
     try {
-        const url = `https://ja.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=${count}&format=json&origin=*`;
+        const url = `https://ja.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=${count * 5}&format=json&origin=*`; // 多めに取得してフィルタリング
         const response = await fetch(url);
         const data = await response.json();
-        return data.query.random.map(item => item.title);
+        const filteredWords = data.query.random
+            .map(item => item.title)
+            .filter(word => !startsWithNumber(word));
+        
+        // 必要な数だけ返す
+        return filteredWords.slice(0, count);
     } catch (error) {
         console.error("Failed to fetch random words:", error);
         return null;
@@ -212,12 +243,14 @@ async function fetchLinks(word) {
         const links = pages[pageId].links ? pages[pageId].links.map(link => link.title) : [];
         linksContainer.innerHTML = '';
 
-        if (links.length === 0) {
+        const filteredLinks = links.filter(linkTitle => !startsWithNumber(linkTitle));
+
+        if (filteredLinks.length === 0) {
             linksContainer.innerHTML = '<p>このページにはリンクがありません。</p>';
             return;
         }
 
-        links.forEach(linkTitle => {
+        filteredLinks.forEach(linkTitle => {
             const linkElement = document.createElement('a');
             linkElement.className = 'link-item';
             linkElement.href = '#';
