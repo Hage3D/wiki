@@ -1,0 +1,95 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #333;
+    color: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+}
+
+header h1 {
+    text-align: center;
+    margin-top: 0;
+}
+
+#gameState {
+    display: flex;
+    justify-content: space-between; /* 両端に配置 */
+    align-items: center;
+    background-color: #444;
+    padding: 15px 25px; /* パディングを調整 */
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#gameState p {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.game-center-controls {
+    text-align: center;
+}
+
+.goal-text {
+    text-align: right; /* ゴールを右揃えに */
+}
+
+.word-display {
+    font-weight: bold;
+    font-size: 1.4em;
+    color: #fff;
+}
+
+#hintButton {
+    background-color: #555;
+    color: #fff;
+    border: 1px solid #666;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+#hintButton:hover {
+    background-color: #666;
+}
+
+#hintButton:disabled {
+    background-color: #444;
+    cursor: not-allowed;
+}
+
+#linksContainer {
+    height: 65vh; /* 画面の高さの65% */
+    overflow-y: auto;
+    border: 1px solid #555;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: #2c2c2c;
+    /* 画面幅に応じて列の幅と隙間を調整 */
+    column-width: 220px;
+    column-gap: 25px;
+}
+
+.link-item {
+    color: #8ab4f8;
+    text-decoration: none;
+    display: inline-block; /* マルチカラムのために変更 */
+    width: 100%;
+    padding: 10px 5px;
+    border-bottom: 1px solid #444;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* 列の途中でリンクが分断されるのを防ぐ */
+    break-inside: avoid;
+}
+
+.link-item:hover {
+    background-color: #4a4a4a;
+    color: #ffffff;
+}
+
+.link-item:last-child {
+    border-bottom: none;
+}
