@@ -17,8 +17,7 @@ const ROUND_CLEAR_BONUS = 1000; // ラウンドクリア時のボーナス
 let hintUsedThisRound = false; // このラウンドでヒントを使ったか
 
 // ゲームモード関連
-const DIFFICULTY_STEPS = [2, 3, 4]; // 各ラウンドの目標クリック数
-const TOTAL_ROUNDS = DIFFICULTY_STEPS.length; // 総ラウンド数
+const TOTAL_ROUNDS = 3; // 総ラウンド数
 let clearedRounds = 0; // クリアしたラウンド数
 
 // ----------------
@@ -53,43 +52,14 @@ async function startNewRound() {
     clickCount = 0;
     hintUsedThisRound = false;
 
-    // 現在のラウンドの目標クリック数を取得
-    const targetClicks = DIFFICULTY_STEPS[clearedRounds];
-    if (targetClicks === undefined) {
-        // 全ラウンドクリア後の処理（startGame()でリセットされるはずだが念のため）
-        console.error("No more difficulty steps defined.");
+    // ランダムな単語を2つ取得
+    const randomWords = await fetchRandomWords(2);
+    if (!randomWords || randomWords.length < 2) {
+        gameStateDiv.innerHTML = '<p>お題の取得に失敗しました。リロードしてください。</p>';
         return;
     }
 
-    let pathFound = false;
-    let attempts = 0;
-    const MAX_ATTEMPTS = 10; // パスが見つからない場合の最大試行回数
-
-    while (!pathFound && attempts < MAX_ATTEMPTS) {
-        attempts++;
-        // ランダムなゴール単語を取得
-        const randomWords = await fetchRandomWords(1);
-        if (!randomWords || randomWords.length === 0) {
-            gameStateDiv.innerHTML = '<p>お題の取得に失敗しました。リロードしてください。</p>';
-            return;
-        }
-        GOAL_WORD = randomWords[0];
-
-        // ゴールから逆算してスタート単語を見つける
-        START_WORD = await findStartWordByBacktracking(GOAL_WORD, targetClicks);
-
-        if (START_WORD) {
-            pathFound = true;
-        } else {
-            console.warn(`Attempt ${attempts}: Could not find a path of ${targetClicks} clicks to ${GOAL_WORD}. Retrying...`);
-        }
-    }
-
-    if (!pathFound) {
-        gameStateDiv.innerHTML = `<p>難易度 ${targetClicks} のお題を見つけられませんでした。リロードしてください。</p>`;
-        return;
-    }
-
+    [START_WORD, GOAL_WORD] = randomWords;
     currentWord = START_WORD;
 
     updateUI();
@@ -114,58 +84,12 @@ async function fetchRandomWords(count) {
 }
 
 /**
- * 指定された単語から指定されたクリック数だけ逆算してスタート単語を見つける
- * @param {string} goalWord - ゴールとなる単語
- * @param {number} clicks - 目標とするクリック数
- * @returns {Promise<string|null>} 見つかったスタート単語、またはnull
- */
-async function findStartWordByBacktracking(goalWord, clicks) {
-    let current = goalWord;
-    let path = [goalWord];
-
-    for (let i = 0; i < clicks; i++) {
-        const backlinks = await fetchBacklinks(current);
-        if (!backlinks || backlinks.length === 0) {
-            return null; // パスが見つからない
-        }
-        // ランダムに1つ前の単語を選択
-        const prevWord = backlinks[Math.floor(Math.random() * backlinks.length)];
-        path.unshift(prevWord); // パスの先頭に追加
-        current = prevWord;
-    }
-    return path[0]; // 最終的なスタート単語
-}
-
-/**
- * 指定された単語にリンクしているページ（バックリンク）を取得する
- * @param {string} word - バックリンクを取得する単語
- * @returns {Promise<string[]|null>} バックリンクのタイトル配列、またはnull
- */
-async function fetchBacklinks(word) {
-    try {
-        // blnamespace=0 で記事ページのみに限定
-        const url = `https://ja.wikipedia.org/w/api.php?action=query&list=backlinks&bltitle=${encodeURIComponent(word)}&bllimit=max&format=json&origin=*&blnamespace=0`;
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data.query && data.query.backlinks) {
-            return data.query.backlinks.map(item => item.title);
-        }
-        return null;
-    } catch (error) {
-        console.error("Failed to fetch backlinks:", error);
-        return null;
-    }
-}
-
-/**
  * UIの表示を現在の状態に合わせて更新する
  */
 function updateUI() {
     // 現在の検索入力欄の値を保存
     const oldSearchInput = document.getElementById('searchInput');
     const savedSearchTerm = oldSearchInput ? oldSearchInput.value : '';
-
-    const currentTargetClicks = DIFFICULTY_STEPS[clearedRounds] !== undefined ? DIFFICULTY_STEPS[clearedRounds] : 'N/A'; // Handle undefined for final round or error
 
     gameStateDiv.innerHTML = `
         <div class="location-info">
@@ -183,7 +107,6 @@ function updateUI() {
         </div>
         <div class="game-stats">
             <div class="stat-item">ラウンド: <span id="roundCount">${clearedRounds + 1}/${TOTAL_ROUNDS}</span></div>
-            <div class="stat-item">目標クリック数: <span id="targetClicks">${currentTargetClicks}</span></div>
             <div class="stat-item">クリック数: <span id="clickCount">${clickCount}</span></div>
             <div class="stat-item">スコア: <span id="score">${score}</span></div>
         </div>
@@ -321,15 +244,9 @@ async function handleLinkClick(clickedWord) {
     updateUI();
 
     if (currentWord === GOAL_WORD) {
-        const targetClicks = DIFFICULTY_STEPS[clearedRounds];
         score += ROUND_CLEAR_BONUS; // ラウンドクリアボーナスを加算
 
-        let roundClearMessage = `ラウンド${clearedRounds + 1}クリア！`;
-        if (clickCount === targetClicks) {
-            roundClearMessage += ` 目標クリック数 ${targetClicks} でゴールに到達しました！`;
-        } else {
-            roundClearMessage += ` ${clickCount}クリックでゴールに到達しました。（目標: ${targetClicks}クリック）`;
-        }
+        let roundClearMessage = `ラウンド${clearedRounds + 1}クリア！ ${clickCount}クリックでゴールに到達しました！`;
 
         clearedRounds++;
         if (clearedRounds === TOTAL_ROUNDS) {
