@@ -226,13 +226,13 @@ main {
 /* レスポンシブデザイン */
 @media (max-width: 768px) {
     main {
-        padding: 10px; /* さらにパディングを減らす */
+        padding: 10px;
     }
 
     #gameState {
-        margin: 0 5px; /* マージンをさらに減らす */
-        padding: 10px; /* パディングをさらに減らす */
-        gap: 10px; /* 要素間のギャップを減らす */
+        margin: 0 5px;
+        padding: 10px;
+        gap: 10px;
     }
 
     .location-info {
@@ -244,17 +244,18 @@ main {
     }
 
     .location-box {
-        padding: 8px 12px; /* パディングをさらに減らす */
+        padding: 8px 12px;
     }
 
     .word-display {
-        font-size: 1.2em; /* フォントサイズを小さく */
+        font-size: 1.2em;
     }
 
     .game-stats {
-        flex-direction: column;
-        gap: 8px; /* ギャップを減らす */
-        font-size: 0.9em; /* フォントサイズを小さく */
+        flex-direction: row; /* 横並びに変更 */
+        justify-content: space-around; /* 均等に配置 */
+        gap: 8px;
+        font-size: 0.9em;
     }
 
     .controls {
@@ -263,9 +264,10 @@ main {
 
     #searchInput {
         width: 100%;
-        max-width: 250px; /* 最大幅を調整 */
+        max-width: 250px;
         font-size: 0.9em;
-        padding: 8px 15px 8px 30px; /* パディングを調整 */
+        padding: 8px 15px 8px 30px;
+        margin: 0 auto; /* 中央に配置 */
     }
 
     #skipButton {
@@ -274,13 +276,13 @@ main {
     }
 
     #linksContainer {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* リンクをさらに多く横に並べる */
-        gap: 10px; /* ギャップを減らす */
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
         padding: 5px;
     }
 
     .link-item {
-        padding: 18px; /* クリックエリアを広げるためにパディングを増やす */
-        font-size: 1.1em; /* フォントサイズを少し大きく */
+        padding: 18px;
+        font-size: 1.1em;
     }
 }
